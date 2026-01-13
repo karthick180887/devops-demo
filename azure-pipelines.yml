@@ -5,16 +5,19 @@ pool:
   name: "Default"
 
 steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: "3.11"
-    displayName: "Use Python 3.11"
-
   - script: |
-      python -m pip install --upgrade pip
-      pip install -r requirements.txt
+      if python3 -m venv .venv --clear; then
+        .venv/bin/python -m pip install --upgrade pip
+        .venv/bin/python -m pip install -r requirements.txt
+        echo "##vso[task.setvariable variable=PYTHON_CMD].venv/bin/python"
+      else
+        echo "venv unavailable; using system pip with --break-system-packages"
+        python3 -m pip install --break-system-packages --upgrade pip
+        python3 -m pip install --break-system-packages -r requirements.txt
+        echo "##vso[task.setvariable variable=PYTHON_CMD]python3"
+      fi
     displayName: "Install dependencies"
 
   - script: |
-      python -m pytest -q
+      $(PYTHON_CMD) -m pytest -q
     displayName: "Run tests"
