@@ -20,4 +20,20 @@ steps:
 
   - script: |
       $(PYTHON_CMD) -m pytest -q
-    displayName: "Run tests"
+    displayName: "Run Python tests"
+
+  - task: GoTool@0
+    inputs:
+      version: '1.24.1'
+    displayName: "Install Go"
+
+  - script: |
+      cd microservices-go-starter-main
+      curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.55.2
+      $(go env GOPATH)/bin/golangci-lint run ./...
+    displayName: "Run Go Lint (RAPS Rules)"
+
+  - script: |
+      cd microservices-go-starter-main
+      go test -v ./...
+    displayName: "Run Go Tests (RAPS Quality)"
